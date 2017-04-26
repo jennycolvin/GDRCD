@@ -223,8 +223,10 @@ include_once('../header.inc.php');
              * @author Rhllor
              */
             //$result=gdrcd_query("SELECT * FROM messaggi WHERE id = ".gdrcd_filter('num',$_REQUEST['id_messaggio'])." LIMIT 1", 'result');
-            $result = gdrcd_query("SELECT * FROM messaggi WHERE id = " . gdrcd_filter('num',
-                    $_REQUEST['id_messaggio']) . " and ( destinatario = '" . $_SESSION['login'] . "' or mittente = '" . $_SESSION['login'] . "') LIMIT 1",
+            $result = gdrcd_query("SELECT * FROM messaggi
+WHERE id = " . gdrcd_filter('num', $_REQUEST['id_messaggio']) . "
+  AND ((destinatario='" . gdrcd_filter('in', $_SESSION['login']) . "' AND destinatario_del=0) OR 
+  (mittente='" . gdrcd_filter('in', $_SESSION['login']) . "' AND mittente_del=0)) LIMIT 1",
                 'result');
             if (gdrcd_query($result, 'num_rows') == 0)
             {
@@ -338,16 +340,31 @@ include_once('../header.inc.php');
         if ($_POST['op'] == 'erase')
         {
             $id_messaggio = gdrcd_filter('num', $_POST['id_messaggio']);
-            /** * Bugfix: correzione di un bug che permetteva la cancellazione di messaggi non inviati all'utente.
-             * Viene quindi aggiunta nella clausola where il controllo sulla proprietà del messaggio.
-             * Inoltre viene effettuato un controllo sul numero di righe cancellate. Se non è stato cancellato nulla
-             * non verrà mostrato nessun messaggio ma solo il link per tornare alla schermata messaggi.
-             * @author Rhllor
-             */
-            //gdrcd_query("DELETE FROM messaggi WHERE id = ".$id_messaggio." LIMIT 1");
-            gdrcd_query("DELETE FROM messaggi WHERE id = " . $id_messaggio . " and destinatario = '" . $_SESSION['login'] . "'   LIMIT 1");
-            if (gdrcd_query("", 'affected') > 0)
-            {
+
+            $pm = gdrcd_query("SELECT mittente, destinatario FROM messaggi WHERE id=".$id_messaggio);
+
+            if($pm['mittente']==$_SESSION['login']) {
+                gdrcd_query("UPDATE messaggi SET mittente_del=1 WHERE id = " . $id_messaggio . " AND mittente = '" .
+                  gdrcd_filter('in', $_SESSION['login']) . "'   LIMIT 1");
+            }
+            elseif($pm['destinatario']){
+                gdrcd_query("UPDATE messaggi SET destinatario_del=1 WHERE id = " . $id_messaggio . " AND destinatario = '
+" . gdrcd_filter('in', $_SESSION['login']) . "' LIMIT 1");
+            }
+            else{
+                ?>
+              <div class="warning">
+                Il messaggio che stai tentando di cancellare non esiste o non hai i permessi per visualizzarlo
+              </div>
+              <div class="link_back">
+                <a href="main.php?page=messages_center&offset=0"><?php echo gdrcd_filter('out',
+                      $MESSAGE['interface']['messages']['go_back']); ?></a>
+              </div>
+                <?php
+            }
+
+            if (gdrcd_query("", 'affected') > 0) {
+
                 ?>
                 <div class="warning">
                     <?php echo gdrcd_filter('out',
@@ -357,39 +374,16 @@ include_once('../header.inc.php');
                     <a href="main.php?page=messages_center&offset=0"><?php echo gdrcd_filter('out',
                             $MESSAGE['interface']['messages']['go_back']); ?></a>
                 </div>
-            <?php } else
-            {
-                /** * Enhancement: in caso di nessuna riga cancellata si controlla l'esistenza del messaggio,
-                 * @author Rhllor
-                 */
-                $result = gdrcd_query("SELECT destinatario FROM messaggi WHERE id = " . gdrcd_filter('num',
-                        $_REQUEST['id_messaggio']) . " and ( destinatario = '" . $_SESSION['login'] . "') LIMIT 1",
-                    'result');
-                if (gdrcd_query($result, 'num_rows') == 0)
-                {
-                    ?>
-                    <div class="warning">
-                        Il messaggio che stai tentando di cancellare non esiste
-                    </div>
-                    <div class="link_back">
-                        <a href="main.php?page=messages_center&offset=0"><?php echo gdrcd_filter('out',
-                                $MESSAGE['interface']['messages']['go_back']); ?></a>
-                    </div>
-                    <?php
-                } else
-                {
-                    $record = gdrcd_query($result, 'fetch');
-                    gdrcd_query($result, 'free');
-                }
+            <?php
             }
+
+            //Manutenzione Messaggi
+            gdrcd_query("DELETE messaggi WHERE mittente_del=1 AND destinatario_del=1");
         }
 
-        if ($_POST['op'] == 'erase_checked')
-        {
-            if ( ! empty($_POST['ids']))
-            {
-                foreach ($_POST['ids'] as $k => $v)
-                {
+        if ($_POST['op'] == 'erase_checked') {
+            if (!empty($_POST['ids'])) {
+                foreach ($_POST['ids'] as $k => $v) {
                     if (is_numeric($v))
                     {
                         $POST['ids'][$k] = (int) $v;
@@ -399,11 +393,19 @@ include_once('../header.inc.php');
                     }
                 }
                 $msgs = implode(',', $_POST['ids']);
-                $query = "DELETE FROM messaggi WHERE destinatario='" . gdrcd_filter('in',
+                $query = "UPDATE messaggi SET destinatario_del=1 WHERE destinatario='" . gdrcd_filter('in',
                         $_SESSION['login']) . "' AND id IN (" . $msgs . ")";
                 gdrcd_query($query);
-                if (gdrcd_query("", 'affected') > 0)
-                {
+
+                $aff = gdrcd_query("", 'affected');
+                if ($aff==0) {
+                    $query = "UPDATE messaggi SET mittente_del=1 WHERE mittente='" . gdrcd_filter('in',
+                        $_SESSION['login']) . "' AND id IN (" . $msgs . ")";
+                    gdrcd_query($query);
+                    $aff = gdrcd_query("", 'affected');
+                }
+
+                if ($aff > 0){
                     ?>
                     <div class="warning">
                         <?php echo gdrcd_filter('out',
@@ -428,12 +430,26 @@ include_once('../header.inc.php');
                 </div>
                 <?php
             }
+            //Manutenzione Messaggi
+            gdrcd_query("DELETE messaggi WHERE mittente_del=1 AND destinatario_del=1");
         }
 
         /*Eliminazione di tutti i messaggi*/
         if ($_REQUEST['op'] == 'eraseall')
         {
-            gdrcd_query("DELETE FROM messaggi WHERE destinatario = '" . $_SESSION['login'] . "' AND letto = 1");
+          $sent = false;
+          if(!empty($_REQUEST['sent'])){
+            $sent = true;
+          }
+
+          if(!$sent) {
+              gdrcd_query("UPDATE messaggi SET destinarario_del=1 WHERE destinatario = '" . gdrcd_filter('in',
+              $_SESSION['login'] ) . "' AND letto = 1");
+          }
+          else{
+              gdrcd_query("UPDATE messaggi SET mittente_del=1 WHERE mittente = '" . gdrcd_filter('in',
+                  $_SESSION['login'] ) . "'");
+          }
             ?>
             <div class="warning">
                 <?php echo gdrcd_filter('out',
@@ -443,19 +459,18 @@ include_once('../header.inc.php');
                 <a href="main.php?page=messages_center&offset=0"><?php echo gdrcd_filter('out',
                         $MESSAGE['interface']['messages']['go_back']); ?></a>
             </div>
-        <?php } ?>
+        <?php
+            //Manutenzione Messaggi
+            gdrcd_query("DELETE messaggi WHERE mittente_del=1 AND destinatario_del=1");
+        } ?>
 
 
         <?php /*Elenco messaggi (visualizzazione di base della pagina)*/
-        if ((($_REQUEST['op'] == '') || ($_REQUEST['op'] == 'inviati')) && (isset($_REQUEST['newmessage']) === false))
-        {
-
+        if ((($_REQUEST['op'] == '') || ($_REQUEST['op'] == 'inviati')) && (isset($_REQUEST['newmessage']) === false)) {
             //Determinazione pagina
-            if (isset($_REQUEST['offset']) === false)
-            {
+            if (isset($_REQUEST['offset']) === false) {
                 $pagebegin = 0;
-            } else
-            {
+            } else {
                 $pagebegin = (int) $_REQUEST['offset'] * $PARAMETERS['settings']['messages_per_page'];
             }
             $pageend = $PARAMETERS['settings']['messages_per_page'];
@@ -465,26 +480,17 @@ include_once('../header.inc.php');
             $totaleresults = $record['COUNT(*)'];
 
             //Elenco messaggi paginato
-            if ($_GET['op'] == 'inviati')
-            {
+            if ($_GET['op'] == 'inviati') {
+                $result = gdrcd_query("SELECT * FROM messaggi WHERE mittente = '" . gdrcd_filter('in', $_SESSION['login']) . "' AND mittente_del = 0 ORDER BY spedito DESC LIMIT " . $pagebegin . ", " . $pageend,'result');
 
-                $result = gdrcd_query("SELECT * FROM messaggi WHERE mittente = '" . $_SESSION['login'] . "' AND mittente_del = 0 ORDER BY spedito DESC LIMIT " . $pagebegin . ", " . $pageend . "",
-                    'result');
-
-                $record = gdrcd_query("SELECT COUNT(*) FROM messaggi WHERE mittente = '" . $_SESSION['login'] . "' AND mittente_del = 0");
-
+                $record = gdrcd_query("SELECT COUNT(*) FROM messaggi WHERE mittente = '" . gdrcd_filter('in',
+                $_SESSION['login']) . "' AND mittente_del = 0");
                 $totaleresults = $record['COUNT(*)'];
+            } else {
+                $result = gdrcd_query("SELECT * FROM messaggi WHERE destinatario = '" . gdrcd_filter('in', $_SESSION['login']) . "' AND destinatario_del = 0 ORDER BY spedito DESC LIMIT " . $pagebegin . ", " . $pageend,'result');
 
-            } else
-            {
-
-                $result = gdrcd_query("SELECT * FROM messaggi WHERE destinatario = '" . $_SESSION['login'] . "' AND destinatario_del = 0 " . $extracond . " ORDER BY spedito DESC LIMIT " . $pagebegin . ", " . $pageend . "",
-                    'result');
-
-                $record = gdrcd_query("SELECT COUNT(*) FROM messaggi WHERE destinatario = '" . $_SESSION['login'] . "' AND destinatario_del = 0 " . $extracond . "");
-
+                $record = gdrcd_query("SELECT COUNT(*) FROM messaggi WHERE destinatario = '" . gdrcd_filter('in', $_SESSION['login']) . "' AND destinatario_del = 0");
                 $totaleresults = $record['COUNT(*)'];
-
             }
 
             $numresults = gdrcd_query($result, 'num_rows');
@@ -493,15 +499,11 @@ include_once('../header.inc.php');
             <div class="elenco_record_gioco">
                 <div class="link_back">
                     <a href="main.php?page=messages_center">
-
                         Ricevuti
-
                     </a>
 
                     <a href="main.php?page=messages_center&op=inviati">
-
                         Inviati
-
                     </a>
 
                 </div>
@@ -739,7 +741,7 @@ include_once('../header.inc.php');
 
             <!-- link scrivi messaggio -->
             <div class="link_back">
-                <a href="main.php?page=messages_center&op=eraseall">
+                <a href="main.php?page=messages_center&op=eraseall<?= ($_GET['op'] == 'inviati')?'&sent=1':'' ?>">
                     <?php echo $MESSAGE['interface']['messages']['erase_all']; ?>
                 </a>
             </div>

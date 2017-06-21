@@ -382,8 +382,10 @@ CREATE TABLE IF NOT EXISTS `mappa` (
   `link_immagine` varchar(256) NOT NULL,
   `link_immagine_hover` varchar(256) NOT NULL,
   `id_mappa_collegata` int(11) NOT NULL DEFAULT '0',
-  `x_cord` int(4) DEFAULT '0',
-  `y_cord` int(4) DEFAULT '0',
+  `left_coord` int(4) DEFAULT '0',
+  `top_coord` int(4) DEFAULT '0',
+  `right_coord` int(4) DEFAULT '0',
+  `bottom_coord` int(4) DEFAULT '0',
   `invitati` text NOT NULL,
   `privata` tinyint(1) NOT NULL DEFAULT '0',
   `proprietario` char(20) DEFAULT NULL,
@@ -398,7 +400,7 @@ CREATE TABLE IF NOT EXISTS `mappa` (
 -- Dump dei dati per la tabella `mappa`
 --
 
-INSERT INTO `mappa` (`id`, `nome`, `descrizione`, `stato`, `pagina`, `chat`, `immagine`, `stanza_apparente`, `id_mappa`, `link_immagine`, `link_immagine_hover`, `id_mappa_collegata`, `x_cord`, `y_cord`, `invitati`, `privata`, `proprietario`, `ora_prenotazione`, `scadenza`, `costo`) VALUES
+INSERT INTO `mappa` (`id`, `nome`, `descrizione`, `stato`, `pagina`, `chat`, `immagine`, `stanza_apparente`, `id_mappa`, `link_immagine`, `link_immagine_hover`, `id_mappa_collegata`, `top_coord`, `left_coord`, `right_coord`, `bottom_coord`, `invitati`, `privata`, `proprietario`, `ora_prenotazione`, `scadenza`, `costo`) VALUES
 (1, 'Strada', 'Via che congiunge la periferia al centro.', 'Nella norma', '', 1, 'standard_luogo.png', '', 1, '', '', 0, 180, 150, '', 0, 'Nessuno', '0000-00-00 00:00:00', '0000-00-00 00:00:00', 0),
 (2, 'Piazza', 'Piccola piazza con panchine ed una fontana al centro.', 'Nella norma', '', 1, 'standard_luogo.png', '', 1, '', '', 0, 80, 150, '', 0, 'Nessuno', '0000-00-00 00:00:00', '0000-00-00 00:00:00', 0);
 

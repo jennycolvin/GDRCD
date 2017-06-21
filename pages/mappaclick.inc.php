@@ -28,7 +28,7 @@ if ( (isset($_POST['op'])===TRUE) &&
 }
 
 /*Seleziono le voci della mappa*/
-$result=gdrcd_query("SELECT mappa.id, mappa.nome, mappa.chat, mappa.x_cord, mappa.y_cord, mappa.id_mappa, mappa_click.nome AS nome_mappa, mappa_click.immagine, mappa_click.posizione, mappa_click.id_click, mappa_click.mobile FROM mappa_click LEFT JOIN mappa ON mappa.id_mappa = mappa_click.id_click WHERE mappa_click.id_click = ".$current_map."", 'result');
+$result=gdrcd_query("SELECT mappa.id, mappa.nome, mappa.chat, mappa.x_cord, mappa.y_cord, mappa.left_coord, mappa.top_coord, mappa.right_coord, mappa.bottom_coord, mappa.id_mappa, mappa_click.nome AS nome_mappa, mappa_click.immagine, mappa_click.posizione, mappa_click.id_click, mappa_click.mobile FROM mappa_click LEFT JOIN mappa ON mappa.id_mappa = mappa_click.id_click WHERE mappa_click.id_click = ".$current_map."", 'result');
 
 if (gdrcd_query($result, 'num_rows')==0)
 {
@@ -43,7 +43,7 @@ $just_one_click=gdrcd_query($result, 'fetch');
 gdrcd_query($result, 'free');
 
 
-	$result=gdrcd_query("SELECT mappa.id, mappa.nome, mappa.chat, mappa.link_immagine, mappa.descrizione, mappa.link_immagine_hover, mappa.id_mappa_collegata, mappa.x_cord, mappa.y_cord, mappa.id_mappa, mappa.pagina, mappa_click.nome AS nome_mappa, mappa_click.immagine, mappa_click.posizione, mappa_click.id_click, mappa_click.mobile, mappa_click.larghezza, mappa_click.altezza FROM mappa_click LEFT JOIN mappa ON mappa.id_mappa = mappa_click.id_click WHERE mappa_click.id_click = ".$just_one_click['id_click']."", 'result');
+	$result=gdrcd_query("SELECT mappa.id, mappa.nome, mappa.chat, mappa.link_immagine, mappa.descrizione, mappa.link_immagine_hover, mappa.id_mappa_collegata, mappa.x_cord, mappa.y_cord, mappa.left_coord, mappa.top_coord, mappa.right_coord, mappa.bottom_coord, mappa.id_mappa, mappa.pagina, mappa_click.nome AS nome_mappa, mappa_click.immagine, mappa_click.posizione, mappa_click.id_click, mappa_click.mobile, mappa_click.larghezza, mappa_click.altezza FROM mappa_click LEFT JOIN mappa ON mappa.id_mappa = mappa_click.id_click WHERE mappa_click.id_click = ".$just_one_click['id_click']."", 'result');
 	$redirect_pc=1;
 
 /*Stampo la mappa cliccabile*/
@@ -74,12 +74,15 @@ echo '<div class="pagina_mappaclick">';
 					echo '<div id="descriptionLoc"></div>';
 
 
-		 echo '<div class="mappaclick_map" style="background:url(\'themes/', $PARAMETERS['themes']['current_theme'], '/imgs/maps/', $row['immagine'], '\') top left no-repeat; width:', $row['larghezza'], 'px; height:', $row['altezza'], 'px;">';
+		 echo '<img src="themes/'.$PARAMETERS['themes']['current_theme'].'/imgs/maps/'.$row['immagine'].'" usemap="#mappa_'.$row['nome_mappa'].'" width="100%" style="max-width: 1470px !important;" />';
 		 $echoed_title=TRUE;
 		 $echo_bottom=TRUE;
 		 $vicinato=$row['posizione'];
 		 $self=$row['id_click'];
 		 $mobile=$row['mobile'];
+          
+         echo '<map name="mappa_'.$row['nome_mappa'].'">';          
+          
  	  }//if
 
 
@@ -89,7 +92,6 @@ echo '<div class="pagina_mappaclick">';
 			* Features: link a sottomappe e link immagine
 			* @author Blancks
 		*/
-		echo '<div style="position:absolute; margin:', $row['y_cord'], 'px 0 0 ', $row['x_cord'], 'px;">';
 
 		$qstring_link = '';
 		$label_link = '';
@@ -140,16 +142,13 @@ echo '<div class="pagina_mappaclick">';
 				$fadedesc_link = 'onmouseover="show_desc(event, \''.$descrizione.'\');" onmouseout="hide_desc();"';
 			}
 		}
+        
+		echo '<area shape="rect" coords="'.$row['left_coord'].','.$row['top_coord'].','.$row['right_coord'].','.$row['bottom_coord'].'" href="main.php?', $qstring_link, '" target="_top"', $fadedesc_link,' />';
 
-		echo '<a href="main.php?', $qstring_link, '" target="_top"', $fadedesc_link,'>', $label_link, '</a>';
-
-
-		echo '</div>';
-
-
+       
    }//while
    if($echo_bottom===TRUE){
-	   echo '</div>';
+	   echo '</map>';
 	   $echo_bottom=FALSE;
    }//if
 
@@ -205,7 +204,7 @@ if($vicinato!=INVIAGGIO){
 		       value="<?php echo INVIAGGIO; ?>"
 			   class="game_form_input"/>
 	    <input type="submit"
-	           value="<?php echo gdrcd_filter('out',$MESSAGE['interface']['maps']['leave']); ?>""
+	           value="<?php echo gdrcd_filter('out',$MESSAGE['interface']['maps']['leave']); ?>"
 			   name="op" />
 		</div>
    <?php } else {
@@ -276,3 +275,4 @@ if($vicinato!=INVIAGGIO){
 
  #include('../footer.inc.php');  /*Footer comune*/
 ?>
+

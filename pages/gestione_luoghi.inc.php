@@ -1,4 +1,4 @@
-<div class="pagina_gestione_luoghi">
+<div class="pagina_gestione_luoghi" style="height: 90vh; overflow: auto;">
 
 <?php /*HELP: */ 
 /*Controllo permessi utente*/
@@ -25,7 +25,7 @@ if ($_SESSION['permessi']<MODERATOR){
 	   if ($_POST['immagine']==""){$immagine="standard_luogo.png";}
 	   else{$immagine=gdrcd_filter('in',$_POST['immagine']);}
        /*Eseguo l'inserimento*/
-	   gdrcd_query("INSERT INTO mappa (nome, descrizione, stato, pagina, chat, immagine, stanza_apparente, id_mappa, link_immagine, link_immagine_hover, id_mappa_collegata, x_cord, y_cord, privata, proprietario, scadenza, costo, invitati) VALUES ('".gdrcd_filter('in',$_POST['nome'])."', '".gdrcd_filter('in',$_POST['descrizione'])."', '".gdrcd_filter('in',$_POST['stato'])."', '".gdrcd_filter('in',$_POST['pagina'])."', ".$is_chat.", '".$immagine."', '".gdrcd_filter('in',$_POST['stanza_apparente'])."', ".gdrcd_filter('in',$_POST['mappa']).", '".gdrcd_filter('in',$_POST['image_button'])."', '".gdrcd_filter('in',$_POST['image_button_hover'])."', ".gdrcd_filter('in',$_POST['mappa_linked']).", ".gdrcd_filter('num',$_POST['x_cord']).", ".gdrcd_filter('num',$_POST['y_cord']).", ".$is_privat.", '".gdrcd_filter('in',$_POST['proprietario'])."', '".gdrcd_filter('num',$_POST['year'])."-".gdrcd_filter('num',$_POST['month'])."-".gdrcd_filter('num',$_POST['day'])." 00:00:00'".", ".gdrcd_filter('num',$_POST['costo']).", '')");
+	   gdrcd_query("INSERT INTO mappa (nome, descrizione, stato, left_coord, top_coord, right_coord, bottom_coord, pagina, chat, immagine, stanza_apparente, id_mappa, link_immagine, link_immagine_hover, id_mappa_collegata, privata, proprietario, scadenza, costo, invitati) VALUES ('".gdrcd_filter('in',$_POST['nome'])."', '".gdrcd_filter('in',$_POST['descrizione'])."', '".gdrcd_filter('in',$_POST['stato'])."', ".gdrcd_filter('num',$_POST['left_coord']).", ".gdrcd_filter('num',$_POST['top_coord']).", ".gdrcd_filter('num',$_POST['right_coord']).", ".gdrcd_filter('num',$_POST['bottom_coord']).", '".gdrcd_filter('in',$_POST['pagina'])."', ".$is_chat.", '".$immagine."', '".gdrcd_filter('in',$_POST['stanza_apparente'])."', ".gdrcd_filter('in',$_POST['mappa']).", '".gdrcd_filter('in',$_POST['image_button'])."', '".gdrcd_filter('in',$_POST['image_button_hover'])."', ".gdrcd_filter('in',$_POST['mappa_linked']).", ".$is_privat.", '".gdrcd_filter('in',$_POST['proprietario'])."', '".gdrcd_filter('num',$_POST['year'])."-".gdrcd_filter('num',$_POST['month'])."-".gdrcd_filter('num',$_POST['day'])." 00:00:00'".", ".gdrcd_filter('num',$_POST['costo']).", '' )");
 	   
 ?>
        <div class="warning">
@@ -63,7 +63,7 @@ if ($_SESSION['permessi']<MODERATOR){
 	   if ((isset($_POST['privata'])==TRUE)&&($_POST['privata']=='is_privat')){$is_privat=1;}
        else {$is_privat=0;}
        /*Eseguo l'aggiornamento*/
-	   gdrcd_query("UPDATE mappa SET nome ='".gdrcd_filter('in',$_POST['nome'])."', descrizione = '".gdrcd_filter('in',$_POST['descrizione'])."', stato = '".gdrcd_filter('in',$_POST['stato'])."', chat = ".$is_chat.", immagine = '".gdrcd_filter('in',$_POST['immagine'])."', stanza_apparente = '".gdrcd_filter('in',$_POST['stanza_apparente'])."', pagina = '".gdrcd_filter('in',$_POST['pagina'])."', id_mappa =  ".gdrcd_filter('in',$_POST['mappa']).", link_immagine = '".gdrcd_filter('in',$_POST['image_button'])."', link_immagine_hover = '".gdrcd_filter('in',$_POST['image_button_hover'])."', id_mappa_collegata = ".gdrcd_filter('in',$_POST['mappa_linked']).", x_cord = ".gdrcd_filter('num',$_POST['x_cord']).", y_cord = ".gdrcd_filter('num',$_POST['y_cord']).", privata = ".$is_privat.", proprietario = '".gdrcd_filter('in',$_POST['proprietario'])."', scadenza = '".gdrcd_filter('num',$_POST['year'])."-".gdrcd_filter('num',$_POST['month'])."-".gdrcd_filter('num',$_POST['day'])." 00:00:00"."', costo = ".gdrcd_filter('num',$_POST['costo'])." WHERE id = ".gdrcd_filter('num',$_POST['id_mappa'])." LIMIT 1");
+	   gdrcd_query("UPDATE mappa SET nome ='".gdrcd_filter('in',$_POST['nome'])."', descrizione = '".gdrcd_filter('in',$_POST['descrizione'])."', stato = '".gdrcd_filter('in',$_POST['stato'])."', left_coord = ".gdrcd_filter('num',$_POST['left_coord']).", top_coord = ".gdrcd_filter('num',$_POST['top_coord']).", right_coord = ".gdrcd_filter('num',$_POST['right_coord']).", bottom_coord = ".gdrcd_filter('num',$_POST['bottom_coord']).", chat = ".$is_chat.", immagine = '".gdrcd_filter('in',$_POST['immagine'])."', stanza_apparente = '".gdrcd_filter('in',$_POST['stanza_apparente'])."', pagina = '".gdrcd_filter('in',$_POST['pagina'])."', id_mappa =  ".gdrcd_filter('in',$_POST['mappa']).", link_immagine = '".gdrcd_filter('in',$_POST['image_button'])."', link_immagine_hover = '".gdrcd_filter('in',$_POST['image_button_hover'])."', id_mappa_collegata = ".gdrcd_filter('in',$_POST['mappa_linked']).", privata = ".$is_privat.", proprietario = '".gdrcd_filter('in',$_POST['proprietario'])."', scadenza = '".gdrcd_filter('num',$_POST['year'])."-".gdrcd_filter('num',$_POST['month'])."-".gdrcd_filter('num',$_POST['day'])." 00:00:00"."', costo = ".gdrcd_filter('num',$_POST['costo'])." WHERE id = ".gdrcd_filter('num',$_POST['id_mappa'])." LIMIT 1");
 	   ?>
 	   <div class="warning">
 		  <?php echo gdrcd_filter('out',$MESSAGE['warning']['modified']);?>
@@ -248,20 +248,35 @@ if ($_SESSION['permessi']<MODERATOR){
 	      </div>
 			  
 		  <div class='form_label'>
-             <?php echo gdrcd_filter('out',$MESSAGE['interface']['administration']['locations']['x']); ?>
+             Left coordinate
           </div>
 		  <div class='form_field'>
-	         <input name="x_cord" 
-			        value="<?php echo 0+gdrcd_filter('out',$loaded_location['x_cord']); ?>" />
+	         <input name="left_coord" 
+			        value="<?php echo gdrcd_filter('out',$loaded_location['left_coord']); ?>" />
 		  </div>
 			  
 		  <div class='form_label'>
-             <?php echo gdrcd_filter('out',$MESSAGE['interface']['administration']['locations']['y']); ?>
+             Top coordinate
           </div>
 		  <div class='form_field'>
-	         <input name="y_cord" 
-			        value="<?php echo 0+gdrcd_filter('out',$loaded_location['y_cord']); ?>" />
+	         <input name="top_coord" 
+			        value="<?php echo gdrcd_filter('out',$loaded_location['top_coord']); ?>" />
 		  </div>
+		  <div class='form_label'>
+             Right coordinate
+          </div>
+		  <div class='form_field'>
+	         <input name="right_coord" 
+			        value="<?php echo gdrcd_filter('out',$loaded_location['right_coord']); ?>" />
+		  </div>
+			  
+		  <div class='form_label'>
+             Bottom coordinate
+          </div>
+		  <div class='form_field'>
+	         <input name="bottom_coord" 
+			        value="<?php echo gdrcd_filter('out',$loaded_location['bottom_coord']); ?>" />
+		  </div>        
 		  <div class='form_info'>
 			 <?php echo gdrcd_filter('out',$MESSAGE['interface']['administration']['locations']['x_info']); ?>
 		  </div>
@@ -483,3 +498,4 @@ if ($_SESSION['permessi']<MODERATOR){
 <?php }//else (controllo permessi utente) ?>
 
 </div> <!-- Pagina -->
+
